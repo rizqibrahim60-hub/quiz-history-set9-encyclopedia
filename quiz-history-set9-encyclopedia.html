@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تخصص التاريخ - الموسوعة الشاملة النموذج التاسع</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Almarai:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', 'Almarai', sans-serif; }
+        body { background-color: #0b1329; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .main-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; background: #111936; padding: 12px 24px; border-radius: 50px; border: 1px solid #d4af37; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 1000; align-items: center; }
+        .btn-ctrl { border: none; padding: 9px 18px; border-radius: 20px; font-size: 14px; font-weight: 800; cursor: pointer; color: #ffffff; transition: all 0.2s ease; }
+        .btn-nav { background: #1e3a8a; } 
+
+        #quiz-app-wrapper { position: relative; width: 100%; max-width: 1020px; }
+        #quiz-app { width: 100%; min-height: 520px; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6); border: 4px solid #0f2c59; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; touch-action: none; border-radius: 24px; }
+
+        .top-header {
+            position: relative;
+            background: radial-gradient(circle at center, #103b70 0%, #081d3d 100%);
+            padding: 18px 30px 22px 30px;
+            color: #ffffff;
+            border-bottom: 5px solid #d4af37;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-side { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 140px; }
+        .header-center { text-align: center; flex-grow: 1; }
+        .main-title { font-size: 34px; font-weight: 900; color: #ffffff; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .sub-title { color: #ffd700; font-size: 18px; font-weight: 800; margin: 4px 0; }
+        .author-name { color: #ffffff; font-size: 18px; font-weight: 800; }
+
+        .gold-exam-tag-side {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(255, 215, 0, 0.1) 100%);
+            color: #ffd700;
+            border: 1.5px solid #d4af37;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 800;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+            white-space: nowrap;
+            text-align: center;
+            direction: rtl;
+            unicode-bidi: isolate;
+        }
+
+        .gold-sub-badge {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(255, 215, 0, 0.08) 100%);
+            color: #ffd700;
+            border: 1px solid #d4af37;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            text-align: center;
+            direction: rtl;
+            unicode-bidi: isolate;
+        }
+
+        .header-icon-box { width: 56px; height: 56px; border-radius: 50%; border: 2px solid #d4af37; display: flex; align-items: center; justify-content: center; font-size: 26px; background: rgba(212, 175, 55, 0.12); color: #ffd700; }
+
+        .progress-bar-container { background: #e2e8f0; height: 9px; width: 100%; }
+        .progress-bar { background: #10b981; height: 100%; width: 0%; transition: width 0.3s ease; }
+
+        .status-row { display: flex; justify-content: space-between; padding: 14px 40px 0 40px; font-size: 17px; font-weight: 900; color: #0f2c59; }
+        .card-body { padding: 18px 40px 30px 40px; flex-grow: 1; display: flex; flex-direction: column; gap: 22px; justify-content: center; }
+
+        .question-card-container { background: #ffffff; border: 2.5px solid #0f2c59; border-radius: 18px; padding: 18px 24px; box-shadow: 0 6px 18px rgba(15, 44, 89, 0.07); }
+        .question-header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .badge-q-tag { background: #0f2c59; color: #ffd700; border: 1.5px solid #d4af37; padding: 7px 18px; border-radius: 12px; font-size: 19px; font-weight: 900; white-space: nowrap; }
+        .q-text-content { font-size: 22px; font-weight: 900; color: #0f172a; line-height: 1.45; flex-grow: 1; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .option-btn { background: #f8fafc; border: 2.5px solid #cbd5e1; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease; text-align: right; min-height: 64px; }
+        .option-btn:hover:not([disabled]) { border-color: #0284c7; background: #f0f9ff; transform: translateY(-2px); }
+        .opt-letter { width: 38px; height: 38px; background: #e2e8f0; color: #0f2c59; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; flex-shrink: 0; }
+        .opt-text { font-size: 18px; font-weight: 800; color: #1e293b; flex-grow: 1; padding: 0 14px; }
+
+        .option-btn.correct { background: #ecfdf5 !important; border-color: #10b981 !important; }
+        .option-btn.correct .opt-letter { background: #10b981 !important; color: #ffffff !important; }
+        .option-btn.wrong { background: #fef2f2 !important; border-color: #ef4444 !important; }
+        .option-btn.wrong .opt-letter { background: #ef4444 !important; color: #ffffff !important; }
+
+        .check-mark { font-size: 20px; font-weight: 900; color: #10b981; margin-right: auto; margin-left: 8px; background: #d1fae5; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid #10b981; }
+
+        .conclusion-card-box {
+            background: radial-gradient(circle at center, #103b70 0%, #081d3d 100%);
+            border: 3px solid #d4af37;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            color: #ffffff;
+            box-shadow: 0 10px 30px rgba(15, 44, 89, 0.2);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .conclusion-main-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #ffd700;
+            margin-bottom: 18px;
+            line-height: 1.4;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            direction: rtl;
+        }
+
+        .conclusion-sub-tag {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.2);
+            color: #ffffff;
+            border: 2px solid #d4af37;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+            direction: rtl;
+        }
+
+        .bottom-footer { background: radial-gradient(circle at center, #103b70 0%, #081d3d 100%); border-top: 4px solid #d4af37; padding: 14px 35px; display: flex; justify-content: space-between; align-items: center; color: #ffffff; }
+        .footer-sec { display: flex; align-items: center; gap: 12px; }
+        .footer-sec-center { text-align: center; }
+        .footer-icon-circle { width: 44px; height: 44px; background: rgba(212, 175, 55, 0.15); border: 2px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #ffd700; }
+        .footer-text-title { font-size: 13px; color: #ffd700; font-weight: 800; }
+        .footer-text-val { font-size: 16px; font-weight: 900; direction: ltr; color: #ffffff; letter-spacing: 0.5px; }
+        .footer-author-main { font-size: 20px; font-weight: 900; color: #ffffff; }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .main-controls, .progress-bar-container, .status-row, #drawCanvas { display: none !important; }
+            #quiz-app { box-shadow: none; border: 2px solid #0f2c59; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-controls">
+        <button class="btn-ctrl btn-nav" id="btn-prev" onclick="prevQuestion()">➔ السابق</button>
+        <button class="btn-ctrl btn-nav" id="btn-next-top" onclick="nextQuestion()">التالي ⬅</button>
+    </div>
+
+    <div id="quiz-app-wrapper">
+        <canvas id="drawCanvas" width="1020" height="560"></canvas>
+        <div id="quiz-app">
+            <div class="top-header">
+                <div class="header-side">
+                    <div class="header-icon-box">📖</div>
+                    <div class="gold-sub-badge">لا أحلل نشرها ورقياً أو الكترونياً</div>
+                </div>
+
+                <div class="header-center">
+                    <div class="main-title">تخصص التاريخ</div>
+                    <div class="sub-title">الموسوعة الشاملة - النموذج التاسع للمعلمين والمعلمات</div>
+                    <div class="author-name">إبراهيم أبوزيد | معلم ومدرب وباحث</div>
+                </div>
+
+                <div class="header-side">
+                    <div class="header-icon-box">⏳</div>
+                    <div class="gold-exam-tag-side">أسئلة من اختبارات سابقة</div>
+                </div>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div id="quiz-screen">
+                <div class="status-row">
+                    <span id="question-count">السؤال 1 من 31</span>
+                    <span id="score-count">النقاط: 0</span>
+                </div>
+
+                <div class="card-body" id="card-body-content">
+                    <div class="question-card-container" id="q-box-container">
+                        <div class="question-header-row">
+                            <div class="badge-q-tag" id="q-badge">سؤال 1</div>
+                            <div class="q-text-content" id="q-text">نص السؤال...</div>
+                        </div>
+                    </div>
+
+                    <div class="options-grid" id="options-container"></div>
+                </div>
+            </div>
+
+            <div class="bottom-footer">
+                <div class="footer-sec">
+                    <div class="footer-icon-circle">📞</div>
+                    <div>
+                        <div class="footer-text-title">رقم الهاتف</div>
+                        <div class="footer-text-val">966 55 783 1353 / 010 9828 0895</div>
+                    </div>
+                </div>
+
+                <div class="footer-sec-center">
+                    <div class="footer-author-main">إبراهيم أبوزيد</div>
+                </div>
+
+                <div class="footer-sec" style="direction: ltr;">
+                    <div class="footer-icon-circle">✈</div>
+                    <div style="text-align: right;">
+                        <div class="footer-text-title">تليجرام</div>
+                        <div class="footer-text-val">t.me/myibhistoricy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var rawCardsData = [
+            { num: 1, q: "الهلال الخصيب جغرافيا تطلق علي:", options: ["إقليم الشام والعراق", "شبه الجزيرة العربية", "مصر وادي النيل", "المغرب العربي"], correct: 0 },
+            { num: 2, q: "صاحب النظرة السببية ؟", options: ["ألفن قولدمان", "أرنولد توينبي", "كارل ماركس", "هيرودوت"], correct: 0 },
+            { num: 3, q: "حرب داحس والغبراء قامت في نجد بين قبائل:", options: ["غطفان ( عبس وذبيان )", "بكر وتاغلب", "الأوس والخزرج", "قريش وهوازن"], correct: 0 },
+            { num: 4, q: "علم النميات", options: ["العملات والمسكوكات", "النقوش والصخور", "الآثار القديمة", "المخطوطات"], correct: 0 },
+            { num: 5, q: "نصبت بريطانيا ملكاً علي العراق:", options: ["فيصل بن الحسين", "عبد الله بن الحسين", "علي بن الحسين", "نوري السعيد"], correct: 0 },
+            { num: 6, q: "أمر خالف فيه عمر بن الخطاب أكثر الصحابة:", options: ["أرض السواد", "جمع القرآن", "ديوان الجند", "قتال أهل الردة"], correct: 0 },
+            { num: 7, q: "حدثت موقعة العقاب في:", options: ["الأندلس", "المغرب", "مصر", "الشام"], correct: 0 },
+            { num: 8, q: "دخلت الحجاز تحت السيطرة العثمانية عام:", options: ["1517م", "1453م", "1600م", "1750م"], correct: 0 },
+            { num: 9, q: "كتاب اعمدة الحكمة السبعة ينسب الي:", options: ["توماس إدوارد لورنس [ لورنس العرب }", "ونستون تشرشل", "مارك سايكس", "جون فلتبي"], correct: 0 },
+            { num: 10, q: "قال عن كتاب اعمدة الحكمة السبعة انه كتاب سيظل قمة للغة والأدب:", options: ["فيلادز", "طه حسين", "العقاد", "تشرشل"], correct: 0 },
+            { num: 11, q: "تقويم فرصه يوليوس قيصر عام 46 ق.م:", options: ["اليولياني", "الميلادي", "الهجري", "الشمسي"], correct: 0 },
+            { num: 12, q: "هوازن وغطفان وثقيف ترجع الي:", options: ["مضر", "قحطان", "بيان", "أزد"], correct: 0 },
+            { num: 13, q: "أخطر الثورات السياسية في عهد الدولة العباسية:", options: ["بابك الخرمي", "القرامطة", "الزنج", "الزط"], correct: 0 },
+            { num: 14, q: "- آخر حدث تاريخي في السيرة النبوية في عهدها المكي:", options: ["بيعة العقبة", "الإسراء والمعراج", "هجرة الحبشة", "عام الحزن"], correct: 0 },
+            { num: 15, q: "أنشأ الملك سعود الجامعة الإسلامية ومقرها:", options: ["المدينة", "مكة المكرمة", "الرياض", "جدة"], correct: 0 },
+            { num: 16, q: "ورقة نقدية ) فئة الريال ) بصورة الدينار الإسلامي صدرت في عهد الملك:", options: ["الملك عبد الله", "الملك فهد بن عبد العزيز", "الملك خالد بن عبد العزيز", "الملك سلمان بن عبد العزيز"], correct: 0 },
+            { num: 17, q: "صحابي جليل مدحه الرسول صلي الله عليه وسلم بحب الله ورسوله:", options: ["علي بن أبي طالب", "عمر بن الخطاب", "أبو بكر الصديق", "سعد بن معاذ"], correct: 0 },
+            { num: 18, q: "اشتد إيذاء قريش للرسول صلى الله عليه وسلم بعد موت:", options: ["عمه أبو طالب", "خديجة بنت خويلد", "عبد المطلب", "حمزة بن عبد المطلب"], correct: 0 },
+            { num: 19, q: "الذي ساعد اليهود علي الدخول الي فلسطين بعد السبي البابلي:", options: ["الفرس", "الروم", "الإغريق", "الآشوريون"], correct: 0 },
+            { num: 20, q: "رفض انضمام المملكة العربية السعودية لعصبة الأمم بعد نهاية الحرب العالمية الأولى:", options: ["الملك عبد العزيز", "الملك فيصل", "الملك سعود", "الملك فهد"], correct: 0 },
+            { num: 21, q: "قاد أبو سفيان بن حرب المشركون في معركة:", options: ["أحد", "بدر", "الخندق", "حنين"], correct: 0 },
+            { num: 22, q: "من أهم الدروس المستفادة في معركة أحد عام 3 هجرية:", options: ["إيثار الآخرة", "النصر السريع", "جمع الغنائم", "الاعتماد على الكثرة"], correct: 0 },
+            { num: 23, q: "أن لا يقتل مؤمن كافر ولا ينصر كافر علي مسلم من شروط:", options: ["صحيفة المدينة", "صلح الحديبية", "فتح مكة", "بيعة الرضوان"], correct: 0 },
+            { num: 24, q: "واذكر في الكتاب.. إبراهيم إنه كان صديقاً نبياً.", options: ["إبراهيم", "مريم", "البقرة", "آل عمران"], correct: 0 },
+            { num: 25, q: "آخر حكام الدولة الأموية:", options: ["مروان بن محمد", "معاوية بن يزيد", "مروان بن الحكم", "هشام بن عبد الملك"], correct: 0 },
+            { num: 26, q: "أول كلية في عهد الملك عبد العزيز رحمه الله تعالى:", options: ["الشريعة", "التربية", "الطب", "المهندس"], correct: 0 },
+            { num: 27, q: "تولي فيصل بن تركي الحكم عام :", options: ["1250هـ", "1240هـ", "1260هـ", "1230هـ"], correct: 0 },
+            { num: 28, q: "مؤسس النظام التعليمي السعودي:", options: ["الملك فهد بن عبد العزيز", "الملك عبد العزيز", "الملك فيصل", "الملك سعود"], correct: 0 },
+            { num: 29, q: "تم افتتاح قناة بنما للملاحة في:", options: ["15 أغسطس 1914م", "10 يناير 1905م", "1 ديسمبر 1920م", "5 يوليو 1910م"], correct: 0 },
+            { num: 30, q: "سطع نجم أبو سفيان بن حرب بعد غزوة:", options: ["أحد", "بدر", "الخندق", "تبوك"], correct: 0 },
+            { num: 31, q: "دخل الحجاز تحت الحكم السعودي عام:", options: ["1330 هجرية", "1325 هجرية", "1351 هجرية", "1319 هجرية"], correct: 0 }
+        ];
+
+        function balanceQuizOptions(dataset) {
+            return dataset.map((item, index) => {
+                const correctText = item.options[item.correct];
+                const wrongOptions = item.options.filter((_, i) => i !== item.correct);
+                const shuffledWrongs = [...wrongOptions].sort(() => 0.5 - Math.random());
+                const targetIndex = index % 4;
+                
+                const finalOptions = [];
+                let wrongPtr = 0;
+                for (let pos = 0; pos < 4; pos++) {
+                    if (pos === targetIndex) {
+                        finalOptions.push(correctText);
+                    } else {
+                        finalOptions.push(shuffledWrongs[wrongPtr++]);
+                    }
+                }
+                
+                return {
+                    num: item.num,
+                    q: item.q,
+                    options: finalOptions,
+                    correct: targetIndex
+                };
+            });
+        }
+
+        var cardsData = balanceQuizOptions(rawCardsData);
+        cardsData.push({
+            isConclusion: true,
+            title: "تمنياتي لكم بالتوفيق والنجاح",
+            subTitle: "لا أحلل نشرها ورقياً أو الكترونيا الورد"
+        });
+
+        var letters = ["أ", "ب", "ج", "د"];
+        var currentIndex = 0;
+        var score = 0;
+        var answersState = {};
+
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('quiz-app-wrapper');
+            canvas.width = wrapper.offsetWidth;
+            canvas.height = wrapper.offsetHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        function render() {
+            if (cardsData.length === 0) return;
+            if (currentIndex >= cardsData.length) currentIndex = cardsData.length - 1;
+
+            var item = cardsData[currentIndex];
+            var totalQCount = cardsData.filter(c => !c.isConclusion).length;
+
+            document.getElementById("progress-bar").style.width = ((currentIndex + 1) / cardsData.length * 100) + "%";
+            document.getElementById("btn-prev").disabled = (currentIndex === 0);
+            document.getElementById("btn-next-top").disabled = (currentIndex === cardsData.length - 1);
+
+            var cardBody = document.getElementById("card-body-content");
+
+            if (item.isConclusion) {
+                document.getElementById("question-count").innerText = "الشريحة الختامية";
+                document.getElementById("score-count").innerText = `النقاط النهائية: ${score} من ${totalQCount}`;
+                
+                cardBody.innerHTML = `
+                    <div class="conclusion-card-box">
+                        <div style="font-size: 50px; margin-bottom: 10px;">🌟🎓🌟</div>
+                        <div class="conclusion-main-title">${item.title}</div>
+                        <div class="conclusion-sub-tag">${item.subTitle}</div>
+                    </div>
+                `;
+            } else {
+                document.getElementById("question-count").innerText = `السؤال ${currentIndex + 1} من ${totalQCount}`;
+                document.getElementById("score-count").innerText = `النقاط: ${score}`;
+
+                var hasAnswered = answersState.hasOwnProperty(currentIndex);
+                var qNumber = item.num !== undefined ? item.num : (currentIndex + 1);
+
+                cardBody.innerHTML = `
+                    <div class="question-card-container">
+                        <div class="question-header-row">
+                            <div class="badge-q-tag">سؤال ${qNumber}</div>
+                            <div class="q-text-content">${item.q}</div>
+                        </div>
+                    </div>
+                    <div class="options-grid" id="options-container"></div>
+                `;
+
+                var container = document.getElementById("options-container");
+                for (var idx = 0; idx < item.options.length; idx++) {
+                    (function(i) {
+                        var btn = document.createElement("button");
+                        btn.className = "option-btn";
+                        var checkHtml = (hasAnswered && i === item.correct) ? '<span class="check-mark">✔</span>' : "";
+
+                        btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text">${item.options[i]}</span>${checkHtml}`;
+
+                        if (hasAnswered) {
+                            btn.disabled = true;
+                            if (i === item.correct) btn.className += " correct";
+                            else if (i === answersState[currentIndex]) btn.className += " wrong";
+                        } else {
+                            btn.onclick = function() { selectOption(i); };
+                        }
+                        container.appendChild(btn);
+                    })(idx);
+                }
+            }
+            resizeCanvas();
+        }
+
+        function selectOption(selectedIndex) {
+            if (answersState.hasOwnProperty(currentIndex)) return;
+            answersState[currentIndex] = selectedIndex;
+            var item = cardsData[currentIndex];
+
+            if (selectedIndex === item.correct) {
+                score++;
+                document.getElementById("score-count").innerText = "النقاط: " + score;
+            }
+            render();
+        }
+
+        function nextQuestion() {
+            if (currentIndex < cardsData.length - 1) {
+                currentIndex++;
+                render();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                render();
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
